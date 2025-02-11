@@ -75,6 +75,27 @@ def setup_custom_parser():
     )
 
     parser.add_argument(
+        "--system_prompt_type",
+        type=str,
+        required=True,
+        help="cot or simple.",
+    )
+
+    parser.add_argument(
+        "--temperature",
+        type=float,
+        required=True,
+        help="Temperature for generation.",
+    )
+
+    parser.add_argument(
+        "--top_p",
+        type=float,
+        required=True,
+        help="Top_p for generation.",
+    )
+
+    parser.add_argument(
         "--annotator_model",
         type=str,
         default="auto",
@@ -290,12 +311,17 @@ def cli_evaluate(args: Optional[argparse.Namespace] = None) -> None:
         model_name = args.model_name
         args.model_args = update_model_args_with_name(args.model_args or "", model_name)
 
+    if args.system_prompt_type == "cot":
+        system_prompt = "Your role as an assistant involves thoroughly exploring questions through a systematic thinking process before providing the final precise and accurate solutions. This requires engaging in a comprehensive cycle of analysis, summarizing, exploration, reassessment, reflection, backtracing, and iteration to develop well-considered thinking process. Please structure your response into two main sections: Thought and Solution using the specified format: <|dummy_86|> {Thought section} <|dummy_87|> {Solution section}. In the Thought section, detail your reasoning process in steps. Each step should include detailed considerations such as analysing questions, summarizing relevant findings, brainstorming new ideas, verifying the accuracy of the current steps, refining any errors, and revisiting previous steps. In the Solution section, based on various attempts, explorations, and reflections from the Thought section, systematically present the final solution that you deem correct. The Solution section should be logical, accurate, and concise and detail necessary steps needed to reach the conclusion. Now, try to solve the following question through the above guidelines:"
+    elif args.system_prompt_type == "simple":
+        system_prompt = "You are a helpful IA assistant."
+
     # Initialize tasks
     if args.annotator_model in LIST_OPENAI_MODELS:
         if not os.getenv("OPENAI_API_KEY"):
             raise ValueError("Please set OPENAI_API_KEY")
 
-    task_manager = InstructTaskManager(annotator_model=args.annotator_model, debug=args.debug, seed=args.seed)
+    task_manager = InstructTaskManager(annotator_model=args.annotator_model, debug=args.debug, system_prompt = system_prompt, temperature=args.temperature, top_p=args.top_p)
     pretrain_task_manager = PretrainTaskManager(args.verbosity, include_path=args.include_path)
 
     utils.eval_logger.info(f"Selected Tasks: {[task for task in task_list]}")

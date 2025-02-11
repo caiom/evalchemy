@@ -79,6 +79,9 @@ class BigCodeBenchBenchmark(BaseBenchmark):
         response_prefix: str = None,
         safe_mode: bool = False,
         check_ground_truth: bool = False,
+        system_prompt: Optional[str] = None,
+        temperature: float = None,
+        top_p: float = None,
     ):
         """
         Initialize BigCodeBench benchmark.
@@ -103,6 +106,9 @@ class BigCodeBenchBenchmark(BaseBenchmark):
         self.prompt_types = ["instruct", "complete", "instruct-hard", "complete-hard"]
         self.safe_mode = safe_mode
         self.check_ground_truth = check_ground_truth
+        self.system_prompt = system_prompt
+        self.temperature = temperature
+        self.top_p = top_p
         if instruction_prefix is None:
             self.instruction_prefix = "Please provide a self-contained Python script that solves the following problem in a markdown code block:"
 
@@ -120,6 +126,10 @@ class BigCodeBenchBenchmark(BaseBenchmark):
         results = {}
         temp_dir_obj = tempfile.TemporaryDirectory()
         temp_dir = temp_dir_obj.name
+
+        # Create the system-formatted message.
+        system_fmt_message = {"role": "system", "content": self.system_prompt}
+
         for prompt_type in self.prompt_types:
             all_instances = []
             try:
@@ -154,7 +164,12 @@ class BigCodeBenchBenchmark(BaseBenchmark):
                             {self.instruction_prefix}
                             {prompt.strip()}
                             """
-                    inputs = task_prompt = model.apply_chat_template([{"role": "user", "content": task_prompt}])
+
+                    messages = [
+                                system_fmt_message,
+                                {"role": "user", "content": task_prompt},
+                            ]
+                    inputs = task_prompt = model.apply_chat_template(messages)
                     formatted_inputs.append(inputs)
 
                     all_instances.append(
@@ -164,10 +179,9 @@ class BigCodeBenchBenchmark(BaseBenchmark):
                             (
                                 inputs,
                                 {
-                                    "max_gen_toks": self.max_tokens,
-                                    # "do_sample": False,
-                                    # "top_p": 1.0,
-                                    "temperature": 0,
+                                    "do_sample": True,
+                                    "temperature": self.temperature,
+                                    "top_p": self.top_p,
                                 },
                             ),
                             example["task_id"],

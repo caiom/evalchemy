@@ -27,8 +27,10 @@ class MATH500Benchmark(BaseBenchmark):
         self,
         data_file: str = "eval/chat_benchmarks/MATH500/data/math500.jsonl",
         debug: bool = False,
-        seed: List[int] = [0, 1234, 1234, 1234],
         logger: Optional[logging.Logger] = None,
+        system_prompt: Optional[str] = None,
+        temperature: float = None,
+        top_p: float = None,
     ):
         """
         Initialize MATH500 benchmark.
@@ -36,14 +38,15 @@ class MATH500Benchmark(BaseBenchmark):
         Args:
             data_file: File containing the MATH500 dataset (id, problem, reference_solution, expected_answer, source)
             debug: If set, only evaluate on 2 examples
-            seed: Random seed for reproducibility. Default is [0, 1234, 1234, 1234] for lm-eval-harness.
             logger: Optional logger instance
         """
         super().__init__(logger)
         self.data_file = data_file
         self.debug = debug
-        self.seed = seed
         self.max_new_tokens = 32768  # set higher to avoid truncation for reasoning models
+        self.system_prompt = system_prompt
+        self.temperature = temperature
+        self.top_p = top_p
 
     def generate_responses(self, model: LM) -> Dict[str, Any]:
         """
@@ -64,10 +67,18 @@ class MATH500Benchmark(BaseBenchmark):
             model_name = model.pretrained
         elif isinstance(model, lm_eval.models.openai_completions.OpenAIChatCompletion):
             model_name = str(f"openai/{model.model}")
+        elif isinstance(model, lm_eval.models.openai_completions.LocalCompletionsAPI):
+            model_name = model.model
         else:
             model_name = model.model_args["model"]
+
+        # Create the system-formatted message.
+        system_fmt_message = {"role": "system", "content": self.system_prompt}
+
+
         for idx, example in enumerate(examples):
             messages = [
+                system_fmt_message,
                 {"role": "user", "content": PROMPT.format(problem=example["problem"])},
             ]
 
@@ -80,10 +91,10 @@ class MATH500Benchmark(BaseBenchmark):
                     (
                         templated_messages,
                         {
-                            "do_sample": False,
+                            "do_sample": True,
                             "max_new_tokens": self.max_new_tokens,
-                            "temperature": 0.7,
-                            "seed": self.seed,
+                            "temperature": self.temperature,
+                            "top_p": self.top_p,
                         },
                     ),
                     idx,

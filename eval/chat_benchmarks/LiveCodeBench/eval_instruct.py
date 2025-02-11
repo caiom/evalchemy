@@ -43,21 +43,24 @@ class LiveCodeBenchBenchmark(BaseBenchmark):
     def __init__(
         self,
         debug: bool = False,
-        seed: List[int] = [0, 1234, 1234, 1234],
         logger: Optional[logging.Logger] = None,
+        system_prompt: Optional[str] = None,
+        temperature: float = None,
+        top_p: float = None,
     ):
         """
         Initialize LiveCodeBench benchmark.
 
         Args:
             debug: If set, only evaluate on 2 examples
-            seed: Random seed for reproducibility. Default is [0, 1234, 1234, 1234] for lm-eval-harness.
             logger: Optional logger instance
         """
         super().__init__(logger)
         self.debug = debug
         self.max_new_tokens = 32768  # set higher to avoid truncation for reasoning models
-        self.seed = seed
+        self.system_prompt = system_prompt
+        self.temperature = temperature
+        self.top_p = top_p
 
     def generate_responses(self, model: LM) -> Dict[str, Any]:
         """
@@ -76,6 +79,10 @@ class LiveCodeBenchBenchmark(BaseBenchmark):
 
         # Prepare instances for model
         all_instances = []
+
+        # Create the system-formatted message.
+        system_fmt_message = {"role": "system", "content": self.system_prompt}
+
         for idx, example in enumerate(examples):
             if example["is_stdin"]:
                 prompt_text = (
@@ -87,7 +94,7 @@ class LiveCodeBenchBenchmark(BaseBenchmark):
                     "Generate an executable Python function generated from the given prompt. Return the function body without invoking it at the final solution."
                     + example["prompt"]
                 )
-            messages = [{"role": "user", "content": prompt_text}]
+            messages = [system_fmt_message, {"role": "user", "content": prompt_text}]
 
             templated_messages = model.apply_chat_template(messages)
 
@@ -98,10 +105,10 @@ class LiveCodeBenchBenchmark(BaseBenchmark):
                     (
                         templated_messages,
                         {
-                            "do_sample": False,
+                            "do_sample": True,
                             "max_new_tokens": self.max_new_tokens,
-                            "temperature": 0.7,
-                            "seed": self.seed,
+                            "temperature": self.temperature,
+                            "top_p": self.top_p,
                         },
                     ),
                     idx,
