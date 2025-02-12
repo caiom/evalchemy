@@ -274,6 +274,8 @@ class LiveCodeBenchBenchmark(BaseBenchmark):
         # Load dataset in smaller chunks and combine
         all_examples = []
 
+        num_shards = 5
+
         dataset = load_dataset(
             "livecodebench/code_generation_lite",
             version_tag="release_v5",
@@ -283,12 +285,16 @@ class LiveCodeBenchBenchmark(BaseBenchmark):
 
         print(f"Dataset size: {len(dataset)}")
 
-        # Process chunk
-        dataset = dataset.map(
-            lambda example: {"private_test_cases": translate_private_test_cases(example["private_test_cases"])}
-        )
-        dataset = dataset.map(map_to_example, remove_columns=dataset.column_names)
+        for i in range(num_shards):
 
-        all_examples.extend(dataset)
+            chunk = dataset.shard(num_shards, i)
+
+            # Process chunk
+            chunk = chunk.map(
+                lambda example: {"private_test_cases": translate_private_test_cases(example["private_test_cases"])}
+            )
+            chunk = chunk.map(map_to_example, remove_columns=chunk.column_names)
+
+            all_examples.extend(chunk)
 
         return all_examples
