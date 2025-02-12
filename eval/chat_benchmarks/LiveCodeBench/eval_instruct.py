@@ -74,7 +74,6 @@ class LiveCodeBenchBenchmark(BaseBenchmark):
             or None for non-primary ranks
         """
         examples = self.load_questions()
-        print(f"Number of examples: {len(examples)}")
         if self.debug:
             examples = examples[:10]
 
@@ -115,8 +114,6 @@ class LiveCodeBenchBenchmark(BaseBenchmark):
                     idx,
                 )
             )
-
-        print(f"Number of instances: {len(all_instances)}")
 
         # Generate model responses
         self.logger.info("Generating responses for LiveCodeBench...")
@@ -273,28 +270,27 @@ class LiveCodeBenchBenchmark(BaseBenchmark):
         """Load LiveCodeBench questions from source."""
         # Load dataset in smaller chunks and combine
         all_examples = []
+        chunk_size = 200  # Process 200 examples at a time
 
-        num_shards = 5
+        for i in range(0, 511, chunk_size):  # Assuming total size is 511
+            try:
+                dataset = load_dataset(
+                    "livecodebench/code_generation_lite",
+                    version_tag="release_v2",
+                    split=f"test[{i}:{i+chunk_size}]",
+                    trust_remote_code=True,
+                )
 
-        dataset = load_dataset(
-            "livecodebench/code_generation_lite",
-            version_tag="release_v5",
-            split="test",
-            trust_remote_code=True,
-        )
+                # Process chunk
+                dataset = dataset.map(
+                    lambda example: {"private_test_cases": translate_private_test_cases(example["private_test_cases"])}
+                )
+                dataset = dataset.map(map_to_example, remove_columns=dataset.column_names)
 
-        print(f"Dataset size: {len(dataset)}")
+                all_examples.extend(dataset)
 
-        for i in range(num_shards):
-
-            chunk = dataset.shard(num_shards, i)
-
-            # Process chunk
-            chunk = chunk.map(
-                lambda example: {"private_test_cases": translate_private_test_cases(example["private_test_cases"])}
-            )
-            chunk = chunk.map(map_to_example, remove_columns=chunk.column_names)
-
-            all_examples.extend(chunk)
+            except ValueError:
+                # We've reached the end of the dataset
+                break
 
         return all_examples
