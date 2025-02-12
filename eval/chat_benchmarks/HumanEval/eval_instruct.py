@@ -116,7 +116,7 @@ Please continue to complete the function. You are not allowed to modify the give
                                 inputs,
                                 {
                                     "do_sample": True,
-                                    "max_new_tokens": self.max_new_tokens,
+                                    "max_new_tokens": 32000,
                                     "temperature": self.temperature,
                                     "top_p": self.top_p,
                                 },

@@ -35,7 +35,7 @@ class HumanEvalPlus:
         model_name="",
         inference_increment=True,
         tokenizer_cfg=None,
-        n_sample=40,
+        n_sample=1,
         k_sample=1,
     ):
         self.data_root = data_root
