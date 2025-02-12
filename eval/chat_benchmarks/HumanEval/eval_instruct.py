@@ -115,8 +115,10 @@ Please continue to complete the function. You are not allowed to modify the give
                             (
                                 inputs,
                                 {
-                                    "max_gen_toks": self.max_tokens,
-                                    "do_sample": False,
+                                    "do_sample": True,
+                                    "max_new_tokens": self.max_new_tokens,
+                                    "temperature": self.temperature,
+                                    "top_p": self.top_p,
                                 },
                             ),
                             idx,
