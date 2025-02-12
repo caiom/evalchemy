@@ -162,7 +162,7 @@ dev = [
 eval = [
     # Using exact package names from their setup files
     "fschat @ file:evalchemy/eval/chat_benchmarks/MTBench",  # Changed to match the likely package name
-    "lm-eval@git+https://github.com/EtashGuha/lm-evaluation-harness@etashg/tokenize_fix", 
+    "lm-eval@git+https://github.com/caiom/lm-evaluation-harness@etashg/tokenize_fix", 
 ]
 
 [tool.hatch.build.targets.wheel]
