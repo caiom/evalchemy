@@ -27,6 +27,9 @@ class HumanEvalPlusBenchmark(BaseBenchmark):
         timeout: float = 3.0,
         debug: bool = False,
         logger: Optional[logging.Logger] = None,
+        system_prompt: Optional[str] = None,
+        temperature: float = None,
+        top_p: float = None,
     ):
         """
         Initialize HumanEvalPlus benchmark.
@@ -47,6 +50,9 @@ class HumanEvalPlusBenchmark(BaseBenchmark):
         self.num_workers = num_workers
         self.timeout = timeout
         self.debug = debug
+        self.system_prompt = system_prompt
+        self.temperature = temperature
+        self.top_p = top_p
 
     def build_deepseekcoder_instruction(self, language: str, question: str) -> str:
         """Build instruction prompt for the model."""
@@ -74,6 +80,9 @@ Please continue to complete the function. You are not allowed to modify the give
         temp_dir_obj = tempfile.TemporaryDirectory()
         temp_dir = temp_dir_obj.name
 
+        # Create the system-formatted message.
+        system_fmt_message = {"role": "system", "content": self.system_prompt}
+
         for lang in self.languages:
             try:
                 problem_file = os.path.join(self.data_dir, f"humanevalplus-{lang}.jsonl")
@@ -93,7 +102,12 @@ Please continue to complete the function. You are not allowed to modify the give
                     prompt = self.build_deepseekcoder_instruction(
                         language_settings[lang]["full_name"], example["prompt"]
                     )
-                    inputs = model.apply_chat_template([{"role": "user", "content": prompt}])
+
+                    messages = [
+                        system_fmt_message,
+                        {"role": "user", "content": prompt},
+                    ]
+                    inputs = model.apply_chat_template(messages)
 
                     all_instances.append(
                         Instance(

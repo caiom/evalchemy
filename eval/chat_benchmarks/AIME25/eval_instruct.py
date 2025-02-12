@@ -31,6 +31,9 @@ class AIME25Benchmark(BaseBenchmark):
         debug: bool = False,
         seed: List[int] = [0, 1234, 1234, 1234],
         logger: Optional[logging.Logger] = None,
+        system_prompt: Optional[str] = None,
+        temperature: float = None,
+        top_p: float = None,
     ):
         """
         Initialize AIME25 benchmark.
@@ -47,6 +50,9 @@ class AIME25Benchmark(BaseBenchmark):
         self.max_new_tokens = 32768  # set higher to avoid truncation for reasoning models
         self.seed = seed
         self.n_repeat = 5
+        self.system_prompt = system_prompt
+        self.temperature = temperature
+        self.top_p = top_p
 
     def generate_responses(self, model: LM) -> Dict[str, Any]:
         """
@@ -63,12 +69,17 @@ class AIME25Benchmark(BaseBenchmark):
         # Prepare instances for model
         all_outputs = []
 
+        # Create the system-formatted message.
+        system_fmt_message = {"role": "system", "content": self.system_prompt}
+
         for i in range(self.n_repeat):
             all_instances = []
             seed = [s + i for s in self.seed]
 
             for idx, example in enumerate(examples):
+
                 messages = [
+                    system_fmt_message,
                     {"role": "user", "content": PROMPT.format(problem=example["problem"])},
                 ]
 

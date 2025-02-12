@@ -272,11 +272,11 @@ class LiveCodeBenchBenchmark(BaseBenchmark):
         all_examples = []
         chunk_size = 200  # Process 200 examples at a time
 
-        for i in range(0, 511, chunk_size):  # Assuming total size is 511
+        for i in range(0, 880, chunk_size):  # Assuming total size is 511
             try:
                 dataset = load_dataset(
                     "livecodebench/code_generation_lite",
-                    version_tag="release_v2",
+                    version_tag="release_v5",
                     split=f"test[{i}:{i+chunk_size}]",
                     trust_remote_code=True,
                 )
