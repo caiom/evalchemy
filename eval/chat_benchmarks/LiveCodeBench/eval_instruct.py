@@ -275,7 +275,6 @@ class LiveCodeBenchBenchmark(BaseBenchmark):
 
         dataset = load_dataset(
             "livecodebench/code_generation_lite",
-            revision="v4_v5",
             split="test",
             trust_remote_code=True,
         )
