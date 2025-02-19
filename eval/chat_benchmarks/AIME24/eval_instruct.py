@@ -32,6 +32,7 @@ class AIME24Benchmark(BaseBenchmark):
         system_prompt: Optional[str] = None,
         temperature: float = None,
         top_p: float = None,
+        seed: int = 42,
     ):
         """
         Initialize AIME24 benchmark.
@@ -48,6 +49,7 @@ class AIME24Benchmark(BaseBenchmark):
         self.system_prompt = system_prompt
         self.temperature = temperature
         self.top_p = top_p
+        self.seed = seed
 
     def generate_responses(self, model: LM) -> Dict[str, Any]:
         """
@@ -86,6 +88,7 @@ class AIME24Benchmark(BaseBenchmark):
                             "max_new_tokens": self.max_new_tokens,
                             "temperature": self.temperature,
                             "top_p": self.top_p,
+                            "seed": self.seed,
                         },
                     ),
                     idx,

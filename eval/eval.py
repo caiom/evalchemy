@@ -96,6 +96,13 @@ def setup_custom_parser():
     )
 
     parser.add_argument(
+        "--seed",
+        type=int,
+        required=True,
+        help="Seed for generation.",
+    )
+
+    parser.add_argument(
         "--annotator_model",
         type=str,
         default="auto",

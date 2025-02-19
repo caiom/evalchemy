@@ -29,7 +29,7 @@ class AIME25Benchmark(BaseBenchmark):
         self,
         data_file: str = "eval/chat_benchmarks/AIME25/data/aime25.json",
         debug: bool = False,
-        seed: List[int] = [0, 1234, 1234, 1234],
+        seed: int = 42,
         logger: Optional[logging.Logger] = None,
         system_prompt: Optional[str] = None,
         temperature: float = None,
@@ -74,7 +74,6 @@ class AIME25Benchmark(BaseBenchmark):
 
         for i in range(self.n_repeat):
             all_instances = []
-            seed = [s + i for s in self.seed]
 
             for idx, example in enumerate(examples):
 
@@ -96,6 +95,7 @@ class AIME25Benchmark(BaseBenchmark):
                                 "max_new_tokens": self.max_new_tokens,
                                 "temperature": self.temperature,
                                 "top_p": self.top_p,
+                                "seed": self.seed,
                             },
                         ),
                         idx,

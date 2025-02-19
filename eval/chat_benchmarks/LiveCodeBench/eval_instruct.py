@@ -2,6 +2,7 @@ from collections import defaultdict
 import json
 import logging
 from typing import Any, Dict, List, Optional
+from datetime import datetime
 
 from lm_eval.api.instance import Instance
 from lm_eval.api.model import LM
@@ -47,6 +48,7 @@ class LiveCodeBenchBenchmark(BaseBenchmark):
         system_prompt: Optional[str] = None,
         temperature: float = None,
         top_p: float = None,
+        seed: int = 42,
     ):
         """
         Initialize LiveCodeBench benchmark.
@@ -61,6 +63,7 @@ class LiveCodeBenchBenchmark(BaseBenchmark):
         self.system_prompt = system_prompt
         self.temperature = temperature
         self.top_p = top_p
+        self.seed = seed
 
     def generate_responses(self, model: LM) -> Dict[str, Any]:
         """
@@ -109,6 +112,7 @@ class LiveCodeBenchBenchmark(BaseBenchmark):
                             "max_new_tokens": self.max_new_tokens,
                             "temperature": self.temperature,
                             "top_p": self.top_p,
+                            "seed": self.seed,
                         },
                     ),
                     idx,
@@ -268,29 +272,27 @@ class LiveCodeBenchBenchmark(BaseBenchmark):
 
     def load_questions(self) -> List[Dict[str, str]]:
         """Load LiveCodeBench questions from source."""
-        # Load dataset in smaller chunks and combine
-        all_examples = []
-        chunk_size = 200  # Process 200 examples at a time
 
-        for i in range(0, 511, chunk_size):  # Assuming total size is 511
-            try:
-                dataset = load_dataset(
-                    "livecodebench/code_generation_lite",
-                    version_tag="release_v2",
-                    split=f"test[{i}:{i+chunk_size}]",
-                    trust_remote_code=True,
-                )
+        dataset = load_dataset(
+            "livecodebench/code_generation_lite",
+            revision="v4_v5",
+            split="test",
+            trust_remote_code=True,
+        )
 
-                # Process chunk
-                dataset = dataset.map(
-                    lambda example: {"private_test_cases": translate_private_test_cases(example["private_test_cases"])}
-                )
-                dataset = dataset.map(map_to_example, remove_columns=dataset.column_names)
+        # Define the range boundaries.
+        # Assuming you mean from August 1, 2024 up to January 31, 2025 (inclusive).
+        start_date = datetime(2024, 8, 1)
+        end_date = datetime(2025, 1, 31, 23, 59, 59, 999999)  # Last possible moment of Jan 31, 2025
 
-                all_examples.extend(dataset)
+        dataset = dataset.filter(lambda example: start_date <= datetime.fromisoformat(example["contest_date"]) <= end_date)
 
-            except ValueError:
-                # We've reached the end of the dataset
-                break
+        # Manual processing as "map" crashes
+        dataset_list = []
+        for i in range(len(dataset)):
+            example = dataset[i]
+            example["private_test_cases"] = translate_private_test_cases(example["private_test_cases"])
+            example = map_to_example(example)
+            dataset_list.append(example)
 
-        return all_examples
+        return dataset_list

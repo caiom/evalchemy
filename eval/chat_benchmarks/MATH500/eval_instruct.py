@@ -31,6 +31,7 @@ class MATH500Benchmark(BaseBenchmark):
         system_prompt: Optional[str] = None,
         temperature: float = None,
         top_p: float = None,
+        seed: int = 42,
     ):
         """
         Initialize MATH500 benchmark.
@@ -47,6 +48,7 @@ class MATH500Benchmark(BaseBenchmark):
         self.system_prompt = system_prompt
         self.temperature = temperature
         self.top_p = top_p
+        self.seed = seed
 
     def generate_responses(self, model: LM) -> Dict[str, Any]:
         """
@@ -95,6 +97,7 @@ class MATH500Benchmark(BaseBenchmark):
                             "max_new_tokens": self.max_new_tokens,
                             "temperature": self.temperature,
                             "top_p": self.top_p,
+                            "seed": self.seed,
                         },
                     ),
                     idx,
