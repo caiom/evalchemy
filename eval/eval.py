@@ -96,13 +96,6 @@ def setup_custom_parser():
     )
 
     parser.add_argument(
-        "--seed",
-        type=int,
-        required=True,
-        help="Seed for generation.",
-    )
-
-    parser.add_argument(
         "--annotator_model",
         type=str,
         default="auto",
@@ -328,7 +321,7 @@ def cli_evaluate(args: Optional[argparse.Namespace] = None) -> None:
         if not os.getenv("OPENAI_API_KEY"):
             raise ValueError("Please set OPENAI_API_KEY")
 
-    task_manager = InstructTaskManager(annotator_model=args.annotator_model, debug=args.debug, system_prompt = system_prompt, temperature=args.temperature, top_p=args.top_p)
+    task_manager = InstructTaskManager(annotator_model=args.annotator_model, debug=args.debug, system_prompt = system_prompt, temperature=args.temperature, top_p=args.top_p, seed=args.seed[0])
     pretrain_task_manager = PretrainTaskManager(args.verbosity, include_path=args.include_path)
 
     utils.eval_logger.info(f"Selected Tasks: {[task for task in task_list]}")
