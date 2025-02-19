@@ -25,21 +25,21 @@ class BaseBenchmark(ABC):
     def _normalize_model_args(self, model: LM, instances: List[Instance]) -> List[Instance]:
         for instance in instances:
             seeds = None
-            if "seed" in instance.args[1]:
-                seeds = instance.args[1]["seed"]
+            # if "seed" in instance.args[1]:
+            #     seeds = instance.args[1]["seed"]
 
-                random.seed(seeds[0])
-                np.random.seed(seeds[1])
-                torch.manual_seed(seeds[2])
+            #     random.seed(seeds[0])
+            #     np.random.seed(seeds[1])
+            #     torch.manual_seed(seeds[2])
 
-                if isinstance(model, lm_eval_models.openai_completions.OpenAIChatCompletion) or isinstance(
-                    model, lm_eval_models.openai_completions.OpenAICompletionsAPI
-                ):
-                    instance.args[1]["seed"] = seeds[0] if "seed" in instance.args[1] else None
-                elif isinstance(model, lm_eval_models.vllm_causallms.VLLM):
-                    instance.args[1]["seed"] = seeds[0] if "seed" in instance.args[1] else None
-                else:  # Huggingface does not support seed
-                    _ = instance.args[1].pop("seed") if "seed" in instance.args[1] else None
+            #     if isinstance(model, lm_eval_models.openai_completions.OpenAIChatCompletion) or isinstance(
+            #         model, lm_eval_models.openai_completions.OpenAICompletionsAPI
+            #     ):
+            #         instance.args[1]["seed"] = seeds[0] if "seed" in instance.args[1] else None
+            #     elif isinstance(model, lm_eval_models.vllm_causallms.VLLM):
+            #         instance.args[1]["seed"] = seeds[0] if "seed" in instance.args[1] else None
+            #     else:  # Huggingface does not support seed
+            #         _ = instance.args[1].pop("seed") if "seed" in instance.args[1] else None
             if "max_new_tokens" in instance.args[1]:
                 max_new_tokens = instance.args[1].pop("max_new_tokens")
                 if isinstance(model, lm_eval_models.openai_completions.OpenAIChatCompletion) or isinstance(
