@@ -89,12 +89,12 @@ class LiveCodeBenchBenchmark(BaseBenchmark):
         for idx, example in enumerate(examples):
             if example["is_stdin"]:
                 prompt_text = (
-                    "Generate an executable Python function generated from the given prompt. The function should take stdin as input and print the output. Simply call the function after the definition."
+                    "After thinking, generate an executable Python function based on the given prompt. The function should take stdin as input and print the output. Simply call the function after the definition. All code section (including call) should be within ``` (backticks)."
                     + example["prompt"]
                 )
             else:
                 prompt_text = (
-                    "Generate an executable Python function generated from the given prompt. Return the function body without invoking it at the final solution."
+                    "After thinking, generate an executable Python function within ``` (backticks) based on the given prompt. Return the function body within ``` without invoking it at the final solution."
                     + example["prompt"]
                 )
             messages = [system_fmt_message, {"role": "user", "content": prompt_text}]
@@ -159,6 +159,7 @@ class LiveCodeBenchBenchmark(BaseBenchmark):
         """Helper function to evaluate a single example"""
         try:
             response_entry = {
+                "model_output": example["model_output"],
                 "content": example["model_answer"],
                 "difficulty": example["difficulty"],
                 "correctness": None,
