@@ -34,7 +34,7 @@ def has_code(response):
     if matches:
         return matches
     else:
-        marker = " <|dummy_87|>"
+        marker = "<|dummy_87|>"
         index = response.find(marker)
         if index != -1:
             # Return everything after the marker as a single-element list
