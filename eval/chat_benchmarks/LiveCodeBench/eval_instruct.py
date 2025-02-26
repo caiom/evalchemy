@@ -35,7 +35,7 @@ def has_code(response):
         return matches
     else:
         marker = "<|dummy_87|>"
-        index = response.find(marker)
+        index = response.rfind(marker)
         if index != -1:
             # Return everything after the marker as a single-element list
             return [response[index + len(marker):]]
@@ -140,7 +140,9 @@ class LiveCodeBenchBenchmark(BaseBenchmark):
 
         for example, output in zip(examples, outputs):
             example["model_output"] = output
-            example["model_answer"] = has_code(output)
+            codes = has_code(output)
+            codes = [code.replace("if __name__ == '__main__':\n    ", "") for code in codes]
+            example["model_answer"] = codes  
             examples_list.append(example)
 
         return {"examples": examples_list}
