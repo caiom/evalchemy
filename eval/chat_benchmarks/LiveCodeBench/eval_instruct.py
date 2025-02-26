@@ -98,15 +98,19 @@ class LiveCodeBenchBenchmark(BaseBenchmark):
         for idx, example in enumerate(examples):
             if example["is_stdin"]:
                 prompt_text = (
-                    "After thinking (after the <|dummy_87|> token), generate an executable Python function between based on the given prompt. The function should take stdin as input and print the output. Simply call the function after the definition. No explanation is needed and all code after <|dummy_87|> should be valid code.\nOutput example: \ndef solve():\n    print(\"Hello World\")\n    return\nsolve().\n"
+                    "After thinking, generate an executable Python function between based on the given prompt. The function should take stdin as input and print the output. Simply call the function after the definition. Make sure to wrap the code around a code block, e.g. ```python\n{code}\n```.\nOutput example: ```python\ndef solve():\n    print(\"Hello World\")\n    return\nsolve()\n```.\n"
                     + example["prompt"]
                 )
             else:
                 prompt_text = (
-                    "After thinking (after the <|dummy_87|> token), generate an executable Python function between based on the given prompt. No explanation is needed and all code after <|dummy_87|> should be valid code. Return the function body without invoking it at the final solution.\nOutput example: \ndef solve():\n    print(\"Hello World\")\n    return.\n"
+                    "After thinking, generate an executable Python function between based on the given prompt. Return the function body without invoking it at the final solution. Make sure to wrap the code around a code block, e.g. ```python\n{code}\n```.\nOutput example: ```python\ndef solve():\n    print(\"Hello World\")\n    return\n```.\n"
                     + example["prompt"]
                 )
-            messages = [system_fmt_message, {"role": "user", "content": prompt_text}]
+            
+            if self.system_prompt is not None:
+                messages = [system_fmt_message, {"role": "user", "content": prompt_text}]
+            else:
+                messages = [{"role": "user", "content": prompt_text}]
 
             templated_messages = model.apply_chat_template(messages)
 
@@ -141,7 +145,6 @@ class LiveCodeBenchBenchmark(BaseBenchmark):
         for example, output in zip(examples, outputs):
             example["model_output"] = output
             codes = has_code(output)
-            codes = [code.replace("if __name__ == '__main__':\n    ", "") for code in codes]
             example["model_answer"] = codes  
             examples_list.append(example)
 
