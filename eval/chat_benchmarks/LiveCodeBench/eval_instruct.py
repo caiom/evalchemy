@@ -98,12 +98,12 @@ class LiveCodeBenchBenchmark(BaseBenchmark):
         for idx, example in enumerate(examples):
             if example["is_stdin"]:
                 prompt_text = (
-                    "After thinking, generate an executable Python function between based on the given prompt. The function should take stdin as input and print the output. Simply call the function after the definition. Make sure to wrap the code around a code block, e.g. ```python\n{code}\n```.\nOutput example: ```python\ndef solve():\n    print(\"Hello World\")\n    return\nsolve()\n```.\n"
+                    "Generate an executable Python function based on the given prompt. The function should take stdin as input and print the output. Simply call the function after the definition. Make sure to wrap the code around a code block, e.g. ```python\n{code}\n```.\nCode formatting example: ```python\ndef solve():\n    print(\"Hello World\")\n    return\nsolve()\n```.\n"
                     + example["prompt"]
                 )
             else:
                 prompt_text = (
-                    "After thinking, generate an executable Python function between based on the given prompt. Return the function body without invoking it at the final solution. Make sure to wrap the code around a code block, e.g. ```python\n{code}\n```.\nOutput example: ```python\ndef solve():\n    print(\"Hello World\")\n    return\n```.\n"
+                    "Generate an executable Python function based on the given prompt. Return the function body without invoking it at the final solution. Make sure to wrap the code around a code block, e.g. ```python\n{code}\n```.\nCode formatting example: ```python\ndef solve():\n    print(\"Hello World\")\n    return\n```.\n"
                     + example["prompt"]
                 )
             
